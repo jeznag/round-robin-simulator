@@ -1,10 +1,10 @@
 <link rel="stylesheet" href="styles.css" />
 <label class="assignee-1" for="person1targetPercentage">Target % Leads for Person One</label><input id="person1targetPercentage" type="number" value="38"><br/>
-<label class="assignee-1" for="person1startPercentage">Initial % Leads for Person One</label><input id="person1startPercentage" type="number" value="54"><br/>
+<label class="assignee-1" for="person1startPercentage">Initial % Leads for Person One</label><input id="person1startPercentage" type="number" value="0"><br/>
 <label class="assignee-2" for="person2targetPercentage">Target % Leads for Person Two</label><input id="person2targetPercentage" type="number" value="22"><br/>
-<label class="assignee-2" for="person2startPercentage">Initial % Leads for Person Two</label><input id="person2startPercentage" type="number" value="2"><br/>
+<label class="assignee-2" for="person2startPercentage">Initial % Leads for Person Two</label><input id="person2startPercentage" type="number" value="0"><br/>
 <label class="assignee-3" for="person3targetPercentage">Target % Leads for Person Three</label><input id="person3targetPercentage" type="number" value="40"><br/>
-<label class="assignee-3" for="person3startPercentage">Initial % Leads for Person Three</label><input id="person3startPercentage" type="number" value="44"><br/>
+<label class="assignee-3" for="person3startPercentage">Initial % Leads for Person Three</label><input id="person3startPercentage" type="number" value="0"><br/>
 <label for="numRounds">Number of cycles</label><input id="numRounds" type="number" value="500"><br/>
 <button id="simulateStart">Start Simulation</button><br/>
 <div class="datagrid">
@@ -12,9 +12,10 @@
     <thead>
       <th>Cycle</th>
       <th>Assignee</th>
-      <th>Person 1 allocation</th>
-      <th>Person 2 allocation</th>
-      <th>Person 3 allocation</th>
+      <th>Person 1 allocation (last 200 leads)</th>
+      <th>Person 2 allocation (last 200 leads)</th>
+      <th>Person 3 allocation (last 200 leads)</th>
+      <th>Other people allocation (last 200 leads)</th>
     </thead>
     <tbody>
     </tbody>

@@ -4,16 +4,23 @@ document.querySelector('#simulateStart').addEventListener('click', () => {
   const resultBody = document.querySelector('#results tbody');
   resultBody.innerHTML = '';
   const startPercentages = getDataFromForm(getStartPercentage);
-  const currentLeadCounts = convertPercentagesToNumbers(startPercentages, INITIAL_LEAD_COUNT);
+  const currentAssignments = convertPercentagesToNumbers(startPercentages, INITIAL_LEAD_COUNT);
   const targetPercentages = getDataFromForm(getTargetPercentage);
-  const targetLeadCounts = convertPercentagesToNumbers(targetPercentages, INITIAL_LEAD_COUNT);
   const numCycles = document.querySelector('#numRounds').value;
   const bottomOfTable = document.querySelector('#bottomOfTable');
   let cycleNumber = 0;
   const addResultsInterval = setInterval(() => {
-    const nextAssignee = getNextAssignee(currentLeadCounts, targetPercentages, cycleNumber);
-    currentLeadCounts[nextAssignee - 1] += 1;
-    addResultToDOM(cycleNumber, nextAssignee, currentLeadCounts, resultBody);
+    const currentLeadCounts = getLeadCountFromAssignments(currentAssignments);
+    const nextAssignee = getNextAssignee(currentLeadCounts, targetPercentages, cycleNumber, currentAssignments.length);
+    if (currentAssignments.length > INITIAL_LEAD_COUNT) {
+      const firstAssignee = currentAssignments.shift();
+      if (currentLeadCounts[firstAssignee] > 0) {
+        currentLeadCounts[firstAssignee] -= 1;
+      }
+    }
+    currentAssignments.push(nextAssignee);
+    currentLeadCounts[nextAssignee] += 1;
+    addResultToDOM(cycleNumber, nextAssignee, currentLeadCounts, resultBody, INITIAL_LEAD_COUNT);
     cycleNumber += 1;
 
     bottomOfTable.scrollIntoView();
@@ -24,9 +31,9 @@ document.querySelector('#simulateStart').addEventListener('click', () => {
   }, 25);
 });
 
-function addResultToDOM(cycleNumber, nextAssignee, currentLeadCounts, resultBody) {
-  const totalLeads = INITIAL_LEAD_COUNT + cycleNumber + 1;
-  const leadCountData = currentLeadCounts.map((leadCount, index) => {
+function addResultToDOM(cycleNumber, nextAssignee, currentLeadCounts, resultBody, totalLeads) {
+  const leadCountData = Object.keys(currentLeadCounts).map((assignee, index) => {
+    const leadCount = currentLeadCounts[assignee];
     const percentage = (leadCount / totalLeads * 100).toFixed(2);
     return `<td>${leadCount} leads (${percentage}%)</td>`;
   }).join(' ');
@@ -38,16 +45,23 @@ function addResultToDOM(cycleNumber, nextAssignee, currentLeadCounts, resultBody
 }
 
 function convertPercentagesToNumbers(percentages, totalLeads) {
-  return percentages.map((percentage) => percentage / 100 * totalLeads);
+  const leadCount = percentages.map((percentage) => percentage / 100 * totalLeads);
+  const leadAssignments = [];
+  leadCount.forEach(numLeads => {
+    for (let i = 0; i < numLeads; i++) {
+      leadAssignments.push(i + 1);
+    }
+  });
+
+  return leadAssignments;
 }
 
-function getNextAssignee(currentLeadCounts, targetPercentages, leadNumber) {
-  const totalLeads = INITIAL_LEAD_COUNT + leadNumber;
+function getNextAssignee(currentLeadCounts, targetPercentages, leadNumber, totalLeads) {
   let nextAssignee = 1;
   let biggestDifference = 0;
 
-  currentLeadCounts.forEach((currentLeadCount, index) => {
-    const difference = (targetPercentages[index] / 100 * totalLeads) - currentLeadCount;
+  Object.keys(currentLeadCounts).forEach((assignee, index) => {
+    const difference = (targetPercentages[index] / 100 * totalLeads) - currentLeadCounts[assignee];
     if (difference > biggestDifference) {
       nextAssignee = index + 1;
       biggestDifference = difference;
@@ -55,6 +69,22 @@ function getNextAssignee(currentLeadCounts, targetPercentages, leadNumber) {
   });
 
   return nextAssignee;
+}
+
+function getLeadCountFromAssignments(currentLeadAssignments) {
+  let leadsForOtherPeople = (INITIAL_LEAD_COUNT - currentLeadAssignments.length);
+  if (leadsForOtherPeople < 0) {
+    leadsForOtherPeople = 0;
+  }
+  return currentLeadAssignments.reduce((totals, assignee, index) => {
+    totals[assignee] += 1;
+    return totals;
+  }, {
+    1: 0,
+    2: 0,
+    3: 0,
+    others: leadsForOtherPeople
+  });
 }
 
 function getDataFromForm(func) {
